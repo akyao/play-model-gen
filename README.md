@@ -1,4 +1,4 @@
 play-model-gen
 ==============
 
-play! framework module. modele generator.
+play! framework module. model generator.
