@@ -1,0 +1,4 @@
+#self: play -> play-model-gen 0.1
+
+require:
+    - play
