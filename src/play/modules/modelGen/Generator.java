@@ -1,6 +1,7 @@
 package play.modules.modelGen;
 
 import java.io.File;
+import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
@@ -12,6 +13,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.Map.Entry;
 
@@ -26,8 +28,12 @@ import me.stormcat.maven.plugin.s2jdbcgen.util.ConnectionUtil;
 import me.stormcat.maven.plugin.s2jdbcgen.util.DriverManagerUtil;
 import me.stormcat.maven.plugin.s2jdbcgen.util.FileUtil;
 import me.stormcat.maven.plugin.s2jdbcgen.util.StringUtil;
-import me.stormcat.maven.plugin.s2jdbcgen.util.VelocityUtil;
+//import me.stormcat.maven.plugin.s2jdbcgen.util.VelocityUtil;
 
+import org.apache.velocity.Template;
+import org.apache.velocity.VelocityContext;
+import org.apache.velocity.app.Velocity;
+import org.seasar.util.io.ResourceUtil;
 import org.seasar.util.sql.PreparedStatementUtil;
 import org.seasar.util.sql.ResultSetUtil;
 import org.seasar.util.sql.StatementUtil;
@@ -37,7 +43,13 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 
-
+/**
+ * 
+ * only mysql
+ *
+ * @author konuma_akio
+ *
+ */
 public class Generator {
 
     private static final String SHOW_TABLES = "SHOW TABLES";
@@ -54,17 +66,24 @@ public class Generator {
 
     private final String password;
 
+    private final String vmAbstract;
+
+    private final String vmConcrete;
+
     private DelFlag delFlag;
 
     private static final Logger logger = LoggerFactory.getLogger(GenerateCodeExecutor.class);
 
-    public Generator(String genDir, String rootPackage, String host, String schema, String user, String password) {
+    public Generator(String genDir, String rootPackage, String host, String schema, String user, String password, String vmAbstract, String vmConcrete) {
         this.genDir = genDir;
         this.rootPackage = rootPackage;
         this.host = host;
         this.schema = schema;
         this.user = user;
         this.password = password;
+        this.vmAbstract = vmAbstract;
+        this.vmConcrete = vmConcrete;
+        init();
     }
 
     public void execute() {
@@ -90,7 +109,7 @@ public class Generator {
         }
         logger.info("-------------------------");
 
-        logger.info(String.format("%s からのリバースを開始します。", schema));
+        logger.info(String.format("%s", schema));
         Map<String, ModelMeta> metaMap = new LinkedHashMap<String, ModelMeta>();
         try {
             connection = DriverManagerUtil.getConnection(String.format("jdbc:mysql://%s/%s", host, schema), user, password);
@@ -100,7 +119,7 @@ public class Generator {
             resultSet = PreparedStatementUtil.executeQuery(ps);
             while (ResultSetUtil.next(resultSet)) {
                 String tableName = resultSet.getString(tableNameColumn);
-                logger.info(String.format("%sから情報を取得しました。", tableName));
+                logger.info(String.format("%s", tableName));
                 Table table = metaProcess(metaData, schema, tableName);
                 metaMap.put(tableName, new ModelMeta(table));
             }
@@ -116,7 +135,7 @@ public class Generator {
             for (Column column : table.getColumnList()) {
                 String referencedTable = column.getReferenceTableName();
                 if (StringUtil.isNotBlank(referencedTable) && metaMap.containsKey(referencedTable)) {
-                    logger.info(String.format("%s.%sから%sへの関連を検出しました。", table.getName(), column.getColumnName(), referencedTable));
+                    logger.info(String.format("relation %s.%s > %s", table.getName(), column.getColumnName(), referencedTable));
                     column.setReferencedModel(metaMap.get(referencedTable.trim()));
                 }
             }
@@ -147,9 +166,9 @@ public class Generator {
             params.put("delFlag", delFlag);
 
             //TODO VMをほげほげ
-            logger.info(String.format("*%sに関するファイルを生成します。", modelMeta.getTable().getName()));
-            writeContentsToFile(abstractEntityFile, "abstract_entity.vm", params, true);
-            writeContentsToFile(entityFile, "entity.vm", params, false);
+            logger.info(String.format("generate *%s", modelMeta.getTable().getName()));
+            writeContentsToFile(abstractEntityFile, this.vmAbstract, params, true);
+            writeContentsToFile(entityFile, this.vmConcrete, params, false);
 
             modelMetaItems.add(modelMeta);
         }
@@ -204,11 +223,11 @@ public class Generator {
 
     private void writeContentsToFile(File file, String template, Map<String, Object> params, boolean overwrite) {
         if (overwrite || !file.exists()) {
-            String entityContents = VelocityUtil.merge(template, params);
+            String entityContents = merge(template, params);
             FileUtil.writeStringToFile(file, entityContents, "UTF-8");
-            logger.info(String.format(" |-%sを生成しました。", file.getName()));
+            logger.info(String.format("generated |-%s", file.getName()));
         } else {
-            logger.info(String.format(" |-%sは既に存在するので自動生成がスキップされました。", file.getName()));
+            logger.info(String.format("skip |-%s", file.getName()));
         }
     }
 
@@ -216,11 +235,30 @@ public class Generator {
         this.delFlag = delFlag;
     }
 
+    public String merge(String templateName, Map<String, Object> params){
+
+        VelocityContext context = new VelocityContext();
+        for (Entry<String, Object> entry : params.entrySet()) {
+            context.put(entry.getKey(), entry.getValue());
+        }
+        Template template = Velocity.getTemplate(templateName);
+        StringWriter sw = new StringWriter();
+        template.merge(context, sw);
+        return sw.toString();
+    }
+
+    public void init(){
+        Properties p = new Properties();
+        p.setProperty("file.resource.loader.path", "./, " + this.genDir);
+        Velocity.init(p);
+    }
+
     /**
      * @param args
      */
     public static void main(String[] args) {
-        Generator executor = new Generator("C://Users//konuma_akio_gn//git//play-model-gen//target//gen", "models", "localhost:3306", "ripre", "root", "root");
+        Generator executor
+            = new Generator(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7]);
         DelFlag delFlag = new DelFlag();
         delFlag.setName("valid");
         delFlag.setDelValue(false);

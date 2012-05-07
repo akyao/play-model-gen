@@ -3,6 +3,7 @@ import os, os.path
 import getopt
 import sys
 import subprocess
+from pprint import pprint
 
 MODULE = 'modelgen'
 
@@ -16,10 +17,24 @@ def execute(**kargs):
     args = kargs.get("args")
     env = kargs.get("env")
 
-    print "~ Generating POJOs from the database"
+    genDir = app.path + "\\" + app.conf.get("modelgen.genDir")
+    rootPackage = app.conf.get("modelgen.rootPackage")
+    host = app.conf.get("modelgen.host")
+    scheme = app.conf.get("modelgen.scheme")
+    user = app.conf.get("modelgen.user")
+    password = app.conf.get("modelgen.pass")
+    vmAbstract = app.conf.get("modelgen.vm.abstract")
+    vmConcrete = app.conf.get("modelgen.vm.concrete")
+    params = [genDir, rootPackage, host, scheme, user, password, vmAbstract, vmConcrete]
+
+
+    print "~ Generating Model Classes from the database"
     print "~ "
-    java_cmd = app.java_cmd([], None, "play.modules.modelGen.Generator", args)
+
+    java_cmd = app.java_cmd([], None, "play.modules.modelGen.Generator", params)
+
     try:
+        print "fuck"
         subprocess.call(java_cmd, env=os.environ)
     except OSError:
         print "Could not execute the java executable, please make sure the JAVA_HOME environment variable is set properly (the java executable should reside at JAVA_HOME/bin/java). "
