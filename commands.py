@@ -1,10 +1,14 @@
 # Here you can create play commands that are specific to the module, and extend existing commands
+import os, os.path
+import getopt
+import sys
+import subprocess
 
-MODULE = 'model-gen'
+MODULE = 'modelgen'
 
 # Commands that are specific to your module
 
-COMMANDS = ['model-gen:hello']
+COMMANDS = ['modelgen']
 
 def execute(**kargs):
     command = kargs.get("command")
@@ -12,9 +16,15 @@ def execute(**kargs):
     args = kargs.get("args")
     env = kargs.get("env")
 
-    if command == "model-gen:hello":
-        print "~ Hello"
-
+    print "~ Generating POJOs from the database"
+    print "~ "
+    java_cmd = app.java_cmd([], None, "play.modules.modelGen.Generator", args)
+    try:
+        subprocess.call(java_cmd, env=os.environ)
+    except OSError:
+        print "Could not execute the java executable, please make sure the JAVA_HOME environment variable is set properly (the java executable should reside at JAVA_HOME/bin/java). "
+        sys.exit(-1)
+    print
 
 # This will be executed before any command (new, run...)
 def before(**kargs):
@@ -33,3 +43,4 @@ def after(**kargs):
 
     if command == "new":
         pass
+

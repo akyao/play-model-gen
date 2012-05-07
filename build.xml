@@ -2,6 +2,8 @@
 
 <project name="play-model-gen" default="build" basedir=".">
 
+	<property name="play.path" value="C:/play-1.2.3"/>
+
     <target name="check" unless="play.path">
         <fail message="Please specify Play framework path using -Dplay.path=/path/to/framework/home" />
     </target>
