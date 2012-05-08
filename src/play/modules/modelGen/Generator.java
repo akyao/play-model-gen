@@ -44,7 +44,7 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 
 /**
- * 
+ *
  * only mysql
  *
  * @author konuma_akio
@@ -56,7 +56,9 @@ public class Generator {
 
     private final String genDir;
 
-    private final String rootPackage;
+    private final String packageAbstract;
+
+    private final String packageConcrete;
 
     private final String host;
 
@@ -74,9 +76,10 @@ public class Generator {
 
     private static final Logger logger = LoggerFactory.getLogger(GenerateCodeExecutor.class);
 
-    public Generator(String genDir, String rootPackage, String host, String schema, String user, String password, String vmAbstract, String vmConcrete) {
+    public Generator(String genDir, String packageAbstract, String packageConcrete, String host, String schema, String user, String password, String vmAbstract, String vmConcrete) {
         this.genDir = genDir;
-        this.rootPackage = rootPackage;
+        this.packageAbstract = packageAbstract;
+        this.packageConcrete = packageConcrete;
         this.host = host;
         this.schema = schema;
         this.user = user;
@@ -98,7 +101,8 @@ public class Generator {
 
         logger.info("-----[configuration]-----");
         logger.info(String.format("genDir=%s", genDir));
-        logger.info(String.format("rootPackage=%s", rootPackage));
+        logger.info(String.format("packageAbstract=%s", packageAbstract));
+        logger.info(String.format("packageConcrete=%s", packageConcrete));
         logger.info(String.format("host=%s", host));
         logger.info(String.format("schema=%s", schema));
         logger.info(String.format("user=%s", user));
@@ -142,28 +146,30 @@ public class Generator {
         }
 
         // generate code
-        String rootPath = String.format("%s/%s", genDir, rootPackage.replace(".", "/"));
-        String entityPath = String.format("%s/%s", rootPath, "entity");
-        FileUtil.mkdirsIfNotExists(rootPath);
-        FileUtil.mkdirsIfNotExists(entityPath);
+        String pathAbstract = String.format("%s/%s", genDir, packageAbstract.replace(".", "/"));
+        String pathConcrete = String.format("%s/%s", genDir, packageConcrete.replace(".", "/"));
+        FileUtil.mkdirsIfNotExists(pathAbstract);
+        FileUtil.mkdirsIfNotExists(pathConcrete);
 
-        String entityPackage = String.format("%s.entity", rootPackage);
+//        String entityPackage = String.format("%s.entity", rootPackage);
 
         List<ModelMeta> modelMetaItems = new ArrayList<ModelMeta>();
 
         for (Entry<String, ModelMeta> entry : metaMap.entrySet()) {
             ModelMeta modelMeta = entry.getValue();
 
-            String abstractEntityFilePath = String.format("%s/%s.java", entityPath, modelMeta.getAbstractEntityName());
-            String entityFilePath = String.format("%s/%s.java", entityPath, modelMeta.getEntityName());
+            String abstractEntityFilePath = String.format("%s/%s.java", pathAbstract, modelMeta.getAbstractEntityName());
+            String entityFilePath = String.format("%s/%s.java", pathConcrete, modelMeta.getEntityName());
 
             File abstractEntityFile = new File(abstractEntityFilePath);
             File entityFile = new File(entityFilePath);
 
             Map<String, Object> params = new HashMap<String, Object>();
-            params.put("entityPackage", entityPackage);
+            //params.put("entityPackage", entityPackage);
             params.put("meta", modelMeta);
             params.put("delFlag", delFlag);
+            params.put("packageAbstract", packageAbstract);
+            params.put("packageConcrete", packageConcrete);
 
             //TODO VMをほげほげ
             logger.info(String.format("generate *%s", modelMeta.getTable().getName()));
@@ -178,7 +184,8 @@ public class Generator {
     private Table metaProcess(DatabaseMetaData metaData, String schema, String tableName) throws Exception {
         try {
             Set<String> primaryKeySet = getPrimaryKeySet(metaData, schema, tableName);
-            ColumnListBuilder columnListBuilder = new ColumnListBuilder(metaData.getColumns(null, schema, tableName, "%"), primaryKeySet);
+            //ColumnListBuilder columnListBuilder = new ColumnListBuilder(metaData.getColumns(null, schema, tableName, "%"), primaryKeySet);
+            ColumnListBuilder columnListBuilder = new ColumnListBuilderForPlay(metaData.getColumns(null, schema, tableName, "%"), primaryKeySet);
             List<Column> columnList = columnListBuilder.build();
 
             ResultSet rs = metaData.getIndexInfo("", schema, tableName, false, false);
@@ -258,7 +265,7 @@ public class Generator {
      */
     public static void main(String[] args) {
         Generator executor
-            = new Generator(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7]);
+            = new Generator(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8]);
         DelFlag delFlag = new DelFlag();
         delFlag.setName("valid");
         delFlag.setDelValue(false);

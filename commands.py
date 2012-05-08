@@ -18,14 +18,15 @@ def execute(**kargs):
     env = kargs.get("env")
 
     genDir = app.path + "\\" + app.conf.get("modelgen.genDir")
-    rootPackage = app.conf.get("modelgen.rootPackage")
+    packageAbstract = app.conf.get("modelgen.package.abstract")
+    packageConcrete = app.conf.get("modelgen.package.concrete")
     host = app.conf.get("modelgen.host")
     scheme = app.conf.get("modelgen.scheme")
     user = app.conf.get("modelgen.user")
     password = app.conf.get("modelgen.pass")
     vmAbstract = app.conf.get("modelgen.vm.abstract")
     vmConcrete = app.conf.get("modelgen.vm.concrete")
-    params = [genDir, rootPackage, host, scheme, user, password, vmAbstract, vmConcrete]
+    params = [genDir, packageAbstract, packageConcrete, host, scheme, user, password, vmAbstract, vmConcrete]
 
 
     print "~ Generating Model Classes from the database"
