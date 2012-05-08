@@ -39,7 +39,7 @@
                 </section>
             </manifest>
         </jar>
-        <!-- delete dir="tmp" / -->
+        <delete dir="tmp" />
     </target>
 
     <target name="compile" depends="check">

@@ -151,8 +151,6 @@ public class Generator {
         FileUtil.mkdirsIfNotExists(pathAbstract);
         FileUtil.mkdirsIfNotExists(pathConcrete);
 
-//        String entityPackage = String.format("%s.entity", rootPackage);
-
         List<ModelMeta> modelMetaItems = new ArrayList<ModelMeta>();
 
         for (Entry<String, ModelMeta> entry : metaMap.entrySet()) {
@@ -165,13 +163,11 @@ public class Generator {
             File entityFile = new File(entityFilePath);
 
             Map<String, Object> params = new HashMap<String, Object>();
-            //params.put("entityPackage", entityPackage);
             params.put("meta", modelMeta);
             params.put("delFlag", delFlag);
             params.put("packageAbstract", packageAbstract);
             params.put("packageConcrete", packageConcrete);
 
-            //TODO VMをほげほげ
             logger.info(String.format("generate *%s", modelMeta.getTable().getName()));
             writeContentsToFile(abstractEntityFile, this.vmAbstract, params, true);
             writeContentsToFile(entityFile, this.vmConcrete, params, false);

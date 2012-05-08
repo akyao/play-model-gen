@@ -28,14 +28,12 @@ def execute(**kargs):
     vmConcrete = app.conf.get("modelgen.vm.concrete")
     params = [genDir, packageAbstract, packageConcrete, host, scheme, user, password, vmAbstract, vmConcrete]
 
-
     print "~ Generating Model Classes from the database"
     print "~ "
 
     java_cmd = app.java_cmd([], None, "play.modules.modelGen.Generator", params)
 
     try:
-        print "fuck"
         subprocess.call(java_cmd, env=os.environ)
     except OSError:
         print "Could not execute the java executable, please make sure the JAVA_HOME environment variable is set properly (the java executable should reside at JAVA_HOME/bin/java). "
@@ -59,4 +57,3 @@ def after(**kargs):
 
     if command == "new":
         pass
-
