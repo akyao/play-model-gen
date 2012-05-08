@@ -12,7 +12,11 @@ import com.google.common.collect.ImmutableList;
 import me.stormcat.maven.plugin.s2jdbcgen.factory.ColumnListBuilder;
 import me.stormcat.maven.plugin.s2jdbcgen.meta.Column;
 
-
+/**
+ *
+ * @author konuma_akio
+ *
+ */
 public class ColumnListBuilderForPlay extends ColumnListBuilder{
 
     protected List<Column> columnList;
@@ -34,7 +38,11 @@ public class ColumnListBuilderForPlay extends ColumnListBuilder{
     @Override
     public List<Column> build() {
         while (ResultSetUtil.next(resultSet)) {
-            columnList.add(new ColumnForPlay(resultSet, primaryKeySet));
+            Column column = new ColumnForPlay(resultSet, primaryKeySet);
+            if(!column.getColumnName().equals("id")){
+                // id列は対象外とするので
+                columnList.add(column);
+            }
         }
 
         return ImmutableList.copyOf(columnList);
