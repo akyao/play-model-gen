@@ -153,8 +153,8 @@ public class Generator {
 
         List<ModelMeta> modelMetaItems = new ArrayList<ModelMeta>();
 
-        for (Entry<String, ModelMeta> entry : metaMap.entrySet()) {
-            ModelMeta modelMeta = entry.getValue();
+        for (Entry<String, ModelMeta> model : metaMap.entrySet()) {
+            ModelMeta modelMeta = model.getValue();
 
             String abstractEntityFilePath = String.format("%s/%s.java", pathAbstract, modelMeta.getAbstractEntityName());
             String entityFilePath = String.format("%s/%s.java", pathConcrete, modelMeta.getEntityName());
