@@ -1,0 +1,31 @@
+package ${packageAbstract};
+
+import javax.persistence.Column;
+import javax.persistence.MappedSuperclass;
+
+import play.db.jpa.Model;
+
+import ${packageConcrete}.*;
+
+/**
+ *
+ * @author play-model-gen
+ *
+ */
+@MappedSuperclass
+public abstract class ${meta.abstractEntityName} extends Model {
+#foreach(${column} in ${meta.table.columnList})
+
+    ${column.columnAnnotation}
+    public ${column.javaType} ${column.fieldName}${column.defaultValue};
+#end
+
+#foreach(${column} in ${meta.table.columnList})
+#if(${column.referencedModel})
+    @javax.persistence.ManyToOne
+    @javax.persistence.JoinColumn(name = "${column.columnName}", insertable=false, updatable=false)
+    public ${column.referencedModel.entityName} ${column.referenceFieldName}${column.defaultValue};
+
+#end
+#end
+}
