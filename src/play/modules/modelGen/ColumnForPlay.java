@@ -7,6 +7,7 @@ import java.util.Set;
 import me.stormcat.maven.plugin.s2jdbcgen.Constants.ColumnMetaColumn;
 import me.stormcat.maven.plugin.s2jdbcgen.Constants.MappedType;
 import me.stormcat.maven.plugin.s2jdbcgen.meta.Column;
+import me.stormcat.maven.plugin.s2jdbcgen.util.StringUtil;
 
 /**
  *
@@ -57,5 +58,19 @@ public class ColumnForPlay extends Column{
             default:
                 return super.getJavaType();
         }
+    }
+
+    public String getDefaultValue() {
+        StringBuilder builder = new StringBuilder();
+        if(StringUtil.isNotEmpty(getColumnDef())){
+            String defaultValue = getColumnDef();
+            if(defaultValue.equals("b'0'")){
+                defaultValue = Boolean.FALSE.toString();
+            }else if(defaultValue.equals("b'1'")){
+                defaultValue = Boolean.TRUE.toString();
+            }
+            builder.append(" = " + defaultValue);
+        }
+        return builder.toString();
     }
 }
