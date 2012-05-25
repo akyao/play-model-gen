@@ -17,8 +17,6 @@ import com.sun.tools.javac.Main;
 
 public class GeneratorTest {
 
-    private Set<File> classPaths = new HashSet<File>();
-
     @Before
     public void setUp(){
         File modelsDir = new File("target\\models");
