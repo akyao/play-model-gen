@@ -10,6 +10,7 @@ import java.util.Set;
 
 import me.stormcat.maven.plugin.s2jdbcgen.DelFlag;
 
+import org.apache.commons.collections.ListUtils;
 import org.junit.Before;
 import org.junit.Test;
 import com.sun.tools.javac.Main;
@@ -50,22 +51,27 @@ public class GeneratorTest {
     }
 
     private void verifyGeneratedCode(File file){
-        //TODO Abstractを継承している箇所でコンパイルエラー
-        //TODO classファイルはいらない。コードに問題ないことだけ確認できればいい
+        List<String> files = getJavaFiles(file);
+        //javaファイル数は6個できていること
+        assertEquals(6, files.size());
+        //コンパイルでエラーとならないこと
+        Main main = new Main();
+        int result = main.compile((String[])files.toArray(new String[0]));
+        assertEquals(0, result);
+    }
+
+    private List<String> getJavaFiles(File file){
+        List<String> files = new ArrayList<String>();
         if(file.exists()){
             if(file.isDirectory()){
-                classPaths.add(file);
                 for(File sub : file.listFiles()){
-                    verifyGeneratedCode(sub);
+                    files.addAll(getJavaFiles(sub));
                 }
             }
             if("java".equals(getExtension(file.getName()))){
-                Main main = new Main();
-                String[] string = {"-verbose", file.getPath(), "-classpath", getCp()};
-                int result = main.compile(string);
-                assertEquals(0, result);
-            }
+                files.add(file.getPath());            }
         }
+        return files;
     }
 
     private String getExtension(String fileName){
@@ -76,18 +82,5 @@ public class GeneratorTest {
             return fileName.substring(point + 1);
         }
         return "";
-    }
-
-    private String getCp(){
-
-        if(classPaths.isEmpty()){
-            return "";
-        }
-        StringBuilder builder = new StringBuilder();
-        builder.append("");
-        for(File dir : classPaths){
-            builder.append(dir.getPath() + ";");
-        }
-        return builder.toString();
     }
 }
