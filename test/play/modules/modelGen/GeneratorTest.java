@@ -1,5 +1,9 @@
 package play.modules.modelGen;
 
+import static org.junit.Assert.*;
+
+import java.io.File;
+
 import me.stormcat.maven.plugin.s2jdbcgen.DelFlag;
 
 import org.junit.Before;
@@ -10,7 +14,19 @@ public class GeneratorTest {
 
     @Before
     public void setUp(){
-        //TODO targetディレクトリを掃除したい
+        File modelsDir = new File("target\\models");
+        deleteRecursively(modelsDir);
+    }
+
+    public void deleteRecursively(File file){
+        if(file.exists()){
+            if(file.isDirectory()){
+                for(File sub : file.listFiles()){
+                    deleteRecursively(sub);
+                }
+            }
+            assertTrue(file.delete());
+        }
     }
 
     @Test
