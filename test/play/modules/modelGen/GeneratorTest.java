@@ -32,7 +32,7 @@ public class GeneratorTest {
     @Test
     public void testExecute(){
         Generator executor
-            = new Generator("target", "models.abst", "models", "localhost:3306", "modelgen-test", "root", "root", "test\\abstract_model.vm", "test\\model.vm");
+            = new Generator("target", "models.abst", "models", "localhost:3306", "modelgen_test", "root", "root", "test\\abstract_model.vm", "test\\model.vm");
         DelFlag delFlag = new DelFlag();
         delFlag.setName("valid");
         delFlag.setDelValue(false);

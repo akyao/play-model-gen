@@ -49,4 +49,14 @@
         </javac>
     </target>
 
+	<target name="erm-ddl" >
+		<ermaster.ddl diagramFile="test/db.erm" outputFile="test/ddl.sql" encoding="UTF-8" />
+		<replace file="test/ddl.sql" token="'false'" value="false"/>
+		<replace file="test/ddl.sql" token="DROP TABLE " value="DROP TABLE IF EXISTS "/>
+	</target>
+
+	<target name="erm-image">
+		<ermaster.image diagramFile="test/db.erm" outputFile="test/er.bmp" />
+	</target>
+
 </project>
