@@ -4,6 +4,8 @@ require:
     - play
     - org.seasar.util -> s2util 0.0.0
     - me.stormcat.maven.plugin -> advanced-s2jdbc-gen 0.1.1
+    - provided -> tools 1.0
+    - provided -> advanced-s2jdbc-gen 0.1.1
 
 repositories:
     - maven.seasar.org:
@@ -16,3 +18,8 @@ repositories:
         root: "http://maven.stormcat.me/repository/"
         contains:
             - me.stormcat.maven.plugin ->  advanced-s2jdbc-gen
+    - provided:
+       type:       local
+       artifact:   "${application.path}/jar/[module]-[revision].jar"
+       contains:
+         - provided -> *
