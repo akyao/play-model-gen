@@ -39,6 +39,4 @@ public class GeneratorTest {
         executor.setDelFlag(delFlag);
         executor.execute();
     }
-
-
 }

@@ -17,7 +17,7 @@ CREATE TABLE hoge
 	field_varchar varchar(255),
 	field_bit1 bit(1),
 	field_bit2 bit(1) DEFAULT false NOT NULL,
-	field_bit3 bit(1) DEFAULT 'true' NOT NULL,
+	field_bit3 bit(1) DEFAULT true NOT NULL,
 	field_blog blob,
 	field_boolean boolean,
 	field_char char(8),
