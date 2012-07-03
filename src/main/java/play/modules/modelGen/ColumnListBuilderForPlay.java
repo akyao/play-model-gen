@@ -5,12 +5,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import me.stormcat.maven.plugin.s2jdbcgen.factory.ColumnListBuilder;
+import me.stormcat.maven.plugin.s2jdbcgen.meta.Column;
+
 import org.seasar.util.sql.ResultSetUtil;
 
 import com.google.common.collect.ImmutableList;
-
-import me.stormcat.maven.plugin.s2jdbcgen.factory.ColumnListBuilder;
-import me.stormcat.maven.plugin.s2jdbcgen.meta.Column;
 
 /**
  *
@@ -39,7 +39,7 @@ public class ColumnListBuilderForPlay extends ColumnListBuilder{
     public List<Column> build() {
         while (ResultSetUtil.next(resultSet)) {
             Column column = new ColumnForPlay(resultSet, primaryKeySet);
-            if(!column.getColumnName().equals("id")){
+            if(!column.getColumnName().equalsIgnoreCase("id")){
                 // id列は対象外とするので
                 columnList.add(column);
             }
