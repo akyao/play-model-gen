@@ -18,7 +18,6 @@ public abstract class ${meta.abstractEntityName} extends Model {
 
     ${column.columnAnnotation}
     public ${column.javaType} ${column.fieldName}${column.defaultValue};
-
 #if(${column.codeDef})
     @javax.persistence.Transient
     public ${column.codeDef.enumName} get${column.codeDef.enumName}E() {
