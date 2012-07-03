@@ -1,0 +1,68 @@
+package ${packageAbstract};
+
+import javax.persistence.Column;
+import javax.persistence.MappedSuperclass;
+
+import jp.co.cyberbuzz.play.db.Model;
+
+import ${packageConcrete}.*;
+
+/**
+ *
+ * @author play-model-gen
+ *
+ */
+@MappedSuperclass
+public abstract class ${meta.abstractEntityName} extends Model {
+#foreach(${column} in ${meta.table.columnList})
+
+    ${column.columnAnnotation}
+    public ${column.javaType} ${column.fieldName}${column.defaultValue};
+
+#if(${column.codeDef})
+    @javax.persistence.Transient
+    public ${column.codeDef.enumName} get${column.codeDef.enumName}E() {
+        for (${column.codeDef.enumName} e : ${column.codeDef.enumName}.values()) {
+            if (e.value.equals(${column.fieldName}) {
+                return e;
+            }
+        }
+        return null;
+    }
+
+    public enum ${column.codeDef.enumName} implements jp.co.cyberbuzz.play.db.CodeValue<${column.codeDef.keyType}> {
+#foreach(${codeValue} in ${column.codeDef.codeValues})
+        ${codeValue.field}(#if(${codeValue.keyType} == "String")"#end${codeValue.value}#if(${codeValue.keyType} == "String")"#end, "${codeValue.label}"),
+#end
+    ;
+        private final ${column.codeDef.keyType} value;
+
+        private final String label;
+
+        private ${column.codeDef.enumName}(${column.codeDef.keyType} value, String label) {
+            this.value = value;
+            this.label = label;
+        }
+
+        @Override
+        public ${column.codeDef.keyType} getValue() {
+            return value;
+        }
+
+        @Override
+        public String getLabel() {
+            return label;
+        }
+    }
+#end
+#end
+
+#foreach(${column} in ${meta.table.columnList})
+#if(${column.referencedModel})
+    @javax.persistence.ManyToOne
+    @javax.persistence.JoinColumn(name = "${column.columnName}", insertable=false, updatable=false)
+    public ${column.referencedModel.entityName} ${column.referenceFieldName};
+
+#end
+#end
+}

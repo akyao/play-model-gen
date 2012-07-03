@@ -1,0 +1,18 @@
+package ${packageConcrete};
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+
+import ${packageAbstract}.${meta.abstractEntityName};
+
+/**
+ *
+ * @author play-model-gen
+ *
+ */
+@Entity
+@Table(name = "${meta.table.name}")
+public class ${meta.entityName} extends ${meta.abstractEntityName} {
+
+    // @OneToMany area
+}

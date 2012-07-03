@@ -14,7 +14,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Properties;
 import java.util.Set;
 
 import me.stormcat.maven.plugin.s2jdbcgen.DelFlag;
@@ -32,13 +31,12 @@ import me.stormcat.maven.plugin.s2jdbcgen.util.StringUtil;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
+import org.seasar.util.io.ResourceUtil;
 import org.seasar.util.sql.PreparedStatementUtil;
 import org.seasar.util.sql.ResultSetUtil;
 import org.seasar.util.sql.StatementUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import play.modules.modelGen.ColumnListBuilderForPlay;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
@@ -260,9 +258,10 @@ public class Generator {
     }
 
     public void init() {
-        Properties p = new Properties();
-        p.setProperty("file.resource.loader.path", "./, " + this.genDir);
-        Velocity.init(p);
+        // Properties p = new Properties();
+        // p.setProperty("file.resource.loader.path", "./, " + this.genDir);
+        // Velocity.init(p);
+        Velocity.init(ResourceUtil.getProperties("velocity.properties"));
     }
 
     /**
