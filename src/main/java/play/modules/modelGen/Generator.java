@@ -13,9 +13,9 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
-import java.util.Map.Entry;
 
 import me.stormcat.maven.plugin.s2jdbcgen.DelFlag;
 import me.stormcat.maven.plugin.s2jdbcgen.GenerateCodeExecutor;
@@ -28,27 +28,27 @@ import me.stormcat.maven.plugin.s2jdbcgen.util.ConnectionUtil;
 import me.stormcat.maven.plugin.s2jdbcgen.util.DriverManagerUtil;
 import me.stormcat.maven.plugin.s2jdbcgen.util.FileUtil;
 import me.stormcat.maven.plugin.s2jdbcgen.util.StringUtil;
-//import me.stormcat.maven.plugin.s2jdbcgen.util.VelocityUtil;
 
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
-import org.seasar.util.io.ResourceUtil;
 import org.seasar.util.sql.PreparedStatementUtil;
 import org.seasar.util.sql.ResultSetUtil;
 import org.seasar.util.sql.StatementUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import play.modules.modelGen.ColumnListBuilderForPlay;
+
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 
 /**
- *
+ * 
  * only mysql
- *
+ * 
  * @author konuma_akio
- *
+ * 
  */
 public class Generator {
 
@@ -76,7 +76,8 @@ public class Generator {
 
     private static final Logger logger = LoggerFactory.getLogger(GenerateCodeExecutor.class);
 
-    public Generator(String genDir, String packageAbstract, String packageConcrete, String host, String schema, String user, String password, String vmAbstract, String vmConcrete) {
+    public Generator(String genDir, String packageAbstract, String packageConcrete, String host, String schema,
+            String user, String password, String vmAbstract, String vmConcrete) {
         this.genDir = genDir;
         this.packageAbstract = packageAbstract;
         this.packageConcrete = packageConcrete;
@@ -116,7 +117,8 @@ public class Generator {
         logger.info(String.format("%s", schema));
         Map<String, ModelMeta> metaMap = new LinkedHashMap<String, ModelMeta>();
         try {
-            connection = DriverManagerUtil.getConnection(String.format("jdbc:mysql://%s/%s", host, schema), user, password);
+            connection = DriverManagerUtil.getConnection(String.format("jdbc:mysql://%s/%s", host, schema), user,
+                    password);
             ps = ConnectionUtil.getPreparedStatement(connection, SHOW_TABLES);
             DatabaseMetaData metaData = connection.getMetaData();
 
@@ -139,7 +141,8 @@ public class Generator {
             for (Column column : table.getColumnList()) {
                 String referencedTable = column.getReferenceTableName();
                 if (StringUtil.isNotBlank(referencedTable) && metaMap.containsKey(referencedTable)) {
-                    logger.info(String.format("relation %s.%s > %s", table.getName(), column.getColumnName(), referencedTable));
+                    logger.info(String.format("relation %s.%s > %s", table.getName(), column.getColumnName(),
+                            referencedTable));
                     column.setReferencedModel(metaMap.get(referencedTable.trim()));
                 }
             }
@@ -156,7 +159,8 @@ public class Generator {
         for (Entry<String, ModelMeta> model : metaMap.entrySet()) {
             ModelMeta modelMeta = model.getValue();
 
-            String abstractEntityFilePath = String.format("%s/%s.java", pathAbstract, modelMeta.getAbstractEntityName());
+            String abstractEntityFilePath = String
+                    .format("%s/%s.java", pathAbstract, modelMeta.getAbstractEntityName());
             String entityFilePath = String.format("%s/%s.java", pathConcrete, modelMeta.getEntityName());
 
             File abstractEntityFile = new File(abstractEntityFilePath);
@@ -180,8 +184,10 @@ public class Generator {
     private Table metaProcess(DatabaseMetaData metaData, String schema, String tableName) throws Exception {
         try {
             Set<String> primaryKeySet = getPrimaryKeySet(metaData, schema, tableName);
-            //ColumnListBuilder columnListBuilder = new ColumnListBuilder(metaData.getColumns(null, schema, tableName, "%"), primaryKeySet);
-            ColumnListBuilder columnListBuilder = new ColumnListBuilderForPlay(metaData.getColumns(null, schema, tableName, "%"), primaryKeySet);
+            // ColumnListBuilder columnListBuilder = new ColumnListBuilder(metaData.getColumns(null, schema, tableName,
+            // "%"), primaryKeySet);
+            ColumnListBuilder columnListBuilder = new ColumnListBuilderForPlay(metaData.getColumns(null, schema,
+                    tableName, "%"), primaryKeySet);
             List<Column> columnList = columnListBuilder.build();
 
             ResultSet rs = metaData.getIndexInfo("", schema, tableName, false, false);
@@ -191,16 +197,19 @@ public class Generator {
                 String indexName = rs.getString("INDEX_NAME");
                 if (!"PRIMARY".equals(indexName)) {
                     boolean unique = !rs.getBoolean("NON_UNIQUE");
-                    Index index = indexMap.containsKey(indexName) ? indexMap.get(indexName) : new Index(indexName, unique);
+                    Index index = indexMap.containsKey(indexName) ? indexMap.get(indexName) : new Index(indexName,
+                            unique);
                     final String columnName = rs.getString("COLUMN_NAME");
                     Collection<Column> target = Collections2.filter(columnList, new Predicate<Column>() {
+
                         @Override
                         public boolean apply(Column input) {
                             return input.getColumnName().equals(columnName);
                         }
                     });
                     if (!target.isEmpty()) {
-                        index.addColumn(target.iterator().next(), rs.getInt("ORDINAL_POSITION"), rs.getString("ASC_OR_DESC").equals("A"));
+                        index.addColumn(target.iterator().next(), rs.getInt("ORDINAL_POSITION"),
+                                rs.getString("ASC_OR_DESC").equals("A"));
                     }
 
                     indexMap.put(indexName, index);
@@ -238,7 +247,7 @@ public class Generator {
         this.delFlag = delFlag;
     }
 
-    public String merge(String templateName, Map<String, Object> params){
+    public String merge(String templateName, Map<String, Object> params) {
 
         VelocityContext context = new VelocityContext();
         for (Entry<String, Object> entry : params.entrySet()) {
@@ -250,7 +259,7 @@ public class Generator {
         return sw.toString();
     }
 
-    public void init(){
+    public void init() {
         Properties p = new Properties();
         p.setProperty("file.resource.loader.path", "./, " + this.genDir);
         Velocity.init(p);
@@ -260,8 +269,8 @@ public class Generator {
      * @param args
      */
     public static void main(String[] args) {
-        Generator executor
-            = new Generator(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8]);
+        Generator executor = new Generator(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7],
+                args[8]);
         DelFlag delFlag = new DelFlag();
         delFlag.setName("valid");
         delFlag.setDelValue(false);
