@@ -34,7 +34,7 @@ public abstract class ${meta.abstractEntityName} extends Model {
 #foreach(${codeValue} in ${column.codeDef.codeValues})
         ${codeValue.field}(#if(${codeValue.keyType} == "String")"#end${codeValue.value}#if(${codeValue.keyType} == "String")"#end, "${codeValue.label}"),
 #end
-    ;
+        ;
         private final ${column.codeDef.keyType} value;
 
         private final String label;
@@ -51,6 +51,11 @@ public abstract class ${meta.abstractEntityName} extends Model {
 
         @Override
         public String getLabel() {
+            return label;
+        }
+
+        @Override
+        public String toString() {
             return label;
         }
     }
