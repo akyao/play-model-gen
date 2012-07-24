@@ -29,7 +29,7 @@ public class ${meta.entityName} extends ${meta.abstractEntityName} {
      * @return 結果
      */
     public static java.util.List<${meta.entityName}> findAliveAll() {
-        return find("id = ? AND del = 0").fetch();
+        return find("del = 0").fetch();
     }
 
     // @OneToMany area
