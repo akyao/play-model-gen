@@ -66,8 +66,18 @@ public class ColumnForPlay extends Column{
             String defaultValue = getColumnDef();
             if(defaultValue.equals("b'0'")){
                 defaultValue = Boolean.FALSE.toString();
-            }else if(defaultValue.equals("b'1'")){
+            } else if(defaultValue.equals("b'1'")){
                 defaultValue = Boolean.TRUE.toString();
+            } else if (defaultValue.equals("0")) {
+                if (getJavaType().equals(MappedType.LONG_W)) {
+                    defaultValue = "0L";
+                } else if (getJavaType().equals(MappedType.INTEGER_W)) {
+                    defaultValue = "0";
+                } else if (getJavaType().equals(MappedType.FLOAT_W)) {
+                    defaultValue = "0.0f";
+                } else if (getJavaType().equals(MappedType.DOUBLE_W)) {
+                    defaultValue = "0.0";
+                }
             }
             builder.append(" = " + defaultValue);
         }
