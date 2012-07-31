@@ -254,7 +254,7 @@ public class Generator {
         Template template = Velocity.getTemplate(templateName);
         StringWriter sw = new StringWriter();
         template.merge(context, sw);
-        return sw.toString();
+        return sw.toString().replace("\r\n", "\n");
     }
 
     public void init() {
