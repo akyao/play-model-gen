@@ -7,6 +7,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -20,6 +21,8 @@ import me.stormcat.maven.plugin.s2jdbcgen.DelFlag;
 import me.stormcat.maven.plugin.s2jdbcgen.GenerateCodeExecutor;
 import me.stormcat.maven.plugin.s2jdbcgen.ModelMeta;
 import me.stormcat.maven.plugin.s2jdbcgen.factory.ColumnListBuilder;
+import me.stormcat.maven.plugin.s2jdbcgen.meta.CodeDef;
+import me.stormcat.maven.plugin.s2jdbcgen.meta.CodeValue;
 import me.stormcat.maven.plugin.s2jdbcgen.meta.Column;
 import me.stormcat.maven.plugin.s2jdbcgen.meta.Index;
 import me.stormcat.maven.plugin.s2jdbcgen.meta.Table;
@@ -27,6 +30,7 @@ import me.stormcat.maven.plugin.s2jdbcgen.util.ConnectionUtil;
 import me.stormcat.maven.plugin.s2jdbcgen.util.DriverManagerUtil;
 import me.stormcat.maven.plugin.s2jdbcgen.util.FileUtil;
 import me.stormcat.maven.plugin.s2jdbcgen.util.StringUtil;
+import net.arnx.jsonic.JSON;
 
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
@@ -69,13 +73,15 @@ public class Generator {
     private final String vmAbstract;
 
     private final String vmConcrete;
+    
+    private final String enumDirPath;
 
     private DelFlag delFlag;
 
     private static final Logger logger = LoggerFactory.getLogger(GenerateCodeExecutor.class);
 
     public Generator(String genDir, String packageAbstract, String packageConcrete, String host, String schema,
-            String user, String password, String vmAbstract, String vmConcrete) {
+            String user, String password, String vmAbstract, String vmConcrete, String enumDirPath) {
         this.genDir = genDir;
         this.packageAbstract = packageAbstract;
         this.packageConcrete = packageConcrete;
@@ -85,6 +91,7 @@ public class Generator {
         this.password = password;
         this.vmAbstract = vmAbstract;
         this.vmConcrete = vmConcrete;
+        this.enumDirPath = enumDirPath;
         init();
     }
 
@@ -111,7 +118,26 @@ public class Generator {
             logger.info(String.format("delFlag#delValue=%s", delFlag.isDelValue()));
         }
         logger.info("-------------------------");
-
+        
+        File enumDir = new File(enumDirPath);
+        Map<String, CodeValue[]> enumMap = new LinkedHashMap<String, CodeValue[]>();
+        if (enumDir.exists()) {
+            File[] enumJsonFiles = enumDir.listFiles();
+            for (File file : enumJsonFiles) {
+                String key = file.getName().replace(".json", "");
+                String[] tokens = key.split("_");
+                if (tokens.length != 2) {
+                    logger.info("Invalid enum json file name: %s", file.getName());
+                    continue;
+                }
+                String enumJson = org.seasar.util.io.FileUtil.readText(file, "UTF-8");
+                CodeValue[] values = JSON.decode(enumJson, CodeValue[].class);
+                enumMap.put(key, values);
+            }
+        } else {
+            logger.info("Enum json directory not found.");
+        }
+        
         logger.info(String.format("%s", schema));
         Map<String, ModelMeta> metaMap = new LinkedHashMap<String, ModelMeta>();
         try {
@@ -135,13 +161,23 @@ public class Generator {
         }
 
         for (Entry<String, ModelMeta> entry : metaMap.entrySet()) {
-            Table table = entry.getValue().getTable();
+            ModelMeta modelMeta = entry.getValue();
+            Table table = modelMeta.getTable();
             for (Column column : table.getColumnList()) {
                 String referencedTable = column.getReferenceTableName();
+                String enumKey = modelMeta.getEntityName() + "_" + column.getFieldName();
                 if (StringUtil.isNotBlank(referencedTable) && metaMap.containsKey(referencedTable)) {
                     logger.info(String.format("relation %s.%s > %s", table.getName(), column.getColumnName(),
                             referencedTable));
                     column.setReferencedModel(metaMap.get(referencedTable.trim()));
+                }
+                
+                // 再代入なのであまりよい実装ではないが妥協 yamada
+                CodeValue[] codeValues = enumMap.get(enumKey);
+                if (codeValues != null && codeValues.length > 0) {
+                    CodeDef codeDef = new CodeDef(org.seasar.util.lang.StringUtil.camelize(column.getFieldName()), column.getJavaType());
+                    codeDef.addCodeValues(Arrays.asList(codeValues));
+                    ((ColumnForPlay) column).setCodeDef(codeDef);
                 }
             }
         }
@@ -269,7 +305,7 @@ public class Generator {
      */
     public static void main(String[] args) {
         Generator executor = new Generator(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7],
-                args[8]);
+                args[8], args[9]);
         DelFlag delFlag = new DelFlag();
         delFlag.setName("valid");
         delFlag.setDelValue(false);

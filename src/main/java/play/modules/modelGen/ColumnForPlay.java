@@ -6,6 +6,7 @@ import java.util.Set;
 
 import me.stormcat.maven.plugin.s2jdbcgen.Constants.ColumnMetaColumn;
 import me.stormcat.maven.plugin.s2jdbcgen.Constants.MappedType;
+import me.stormcat.maven.plugin.s2jdbcgen.meta.CodeDef;
 import me.stormcat.maven.plugin.s2jdbcgen.meta.Column;
 import me.stormcat.maven.plugin.s2jdbcgen.util.StringUtil;
 
@@ -15,6 +16,8 @@ import me.stormcat.maven.plugin.s2jdbcgen.util.StringUtil;
  *
  */
 public class ColumnForPlay extends Column{
+    
+    private CodeDef codeDef;
 
     public ColumnForPlay(ResultSet resultSet, Set<String> primaryKeySet) {
         super(resultSet, primaryKeySet);
@@ -83,4 +86,30 @@ public class ColumnForPlay extends Column{
         }
         return builder.toString();
     }
+
+    
+    /**
+     * codeDef を取得します。
+     * @return codeDef
+     */
+    @Override
+    public CodeDef getCodeDef() {
+        if (codeDef != null) {
+            return codeDef;
+        }
+        return super.getCodeDef();
+    }
+
+    
+    /**
+     * codeDefを設定します。
+     * @param codeDef codeDef
+     */
+    public void setCodeDef(CodeDef codeDef) {
+        this.codeDef = codeDef;
+    }
+    
+    
+    
+    
 }
