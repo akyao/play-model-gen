@@ -32,7 +32,15 @@ public abstract class ${meta.abstractEntityName} extends Model {
 
     public enum ${column.codeDef.enumName} implements jp.co.cyberbuzz.play.db.CodeValue<${column.codeDef.keyType}> {
 #foreach(${codeValue} in ${column.codeDef.codeValues})
-        ${codeValue.field}(#if(${codeValue.keyType} == "String")"#end${codeValue.value}#if(${codeValue.keyType} == "String")"#end, "${codeValue.label}"),
+#if(${column.codeDef.keyType} == "String")
+        ${codeValue.field}("${codeValue.value}", "${codeValue.label}"),
+#elseif(${column.codeDef.keyType} == "Long")
+        ${codeValue.field}(${codeValue.value}L, "${codeValue.label}"),
+#elseif(${column.codeDef.keyType} == "Float")
+        ${codeValue.field}(${codeValue.value}f, "${codeValue.label}"),
+#else
+        ${codeValue.field}(${codeValue.value}, "${codeValue.label}"),
+#end
 #end
         ;
         private final ${column.codeDef.keyType} value;
