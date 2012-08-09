@@ -175,7 +175,7 @@ public class Generator {
                 // 再代入なのであまりよい実装ではないが妥協 yamada
                 CodeValue[] codeValues = enumMap.get(enumKey);
                 if (codeValues != null && codeValues.length > 0) {
-                    CodeDef codeDef = new CodeDef(org.seasar.util.lang.StringUtil.camelize(column.getFieldName()), column.getJavaType());
+                    CodeDef codeDef = new CodeDef(org.seasar.util.lang.StringUtil.capitalize(column.getFieldName()), column.getJavaType());
                     codeDef.addCodeValues(Arrays.asList(codeValues));
                     ((ColumnForPlay) column).setCodeDef(codeDef);
                 }
