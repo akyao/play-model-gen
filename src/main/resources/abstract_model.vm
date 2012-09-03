@@ -22,12 +22,7 @@ public abstract class ${meta.abstractEntityName} extends Model {
 
     @javax.persistence.Transient
     public ${column.codeDef.enumName} get${column.codeDef.enumName}E() {
-        for (${column.codeDef.enumName} e : ${column.codeDef.enumName}.values()) {
-            if (e.value.equals(${column.fieldName})) {
-                return e;
-            }
-        }
-        return null;
+        return ${column.codeDef.enumName}.fromValue(${column.fieldName});
     }
 
     public enum ${column.codeDef.enumName} implements jp.co.cyberbuzz.play.db.CodeValue<${column.codeDef.keyType}> {
@@ -65,6 +60,15 @@ public abstract class ${meta.abstractEntityName} extends Model {
         @Override
         public String toString() {
             return label;
+        }
+
+        public static ${column.codeDef.enumName} fromValue(${column.codeDef.keyType} value) {
+            for (${column.codeDef.enumName} e : values()) {
+                if (e.getValue().equals(value)) {
+                    return e;
+                }
+            }
+            return null;
         }
     }
 #end
